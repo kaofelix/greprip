@@ -1,0 +1,21 @@
+[project]
+name = "greprip"
+version = "0.1.0"
+description = "Translate grep/find commands to rg/fd equivalents"
+readme = "README.md"
+requires-python = ">=3.12.1"
+dependencies = []
+
+[project.scripts]
+grg = "grg.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
