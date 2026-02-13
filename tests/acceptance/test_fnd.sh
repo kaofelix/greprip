@@ -82,8 +82,9 @@ run_test "min depth" "$FIXTURES" "-mindepth" "1"
 run_test "name + type file" "$FIXTURES" "-name" "*.py" "-type" "f"
 run_test "type + maxdepth" "$FIXTURES" "-type" "f" "-maxdepth" "1"
 
-# Exec tests - compare the effect rather than output
-# We use wc -l and compare line counts found
+# Exec tests
+run_test "exec basename" "$FIXTURES" "-name" "*.txt" "-exec" "basename" "{}" ";"
+run_test "exec with type" "$FIXTURES" "-type" "f" "-exec" "basename" "{}" ";"
 
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"

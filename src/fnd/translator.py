@@ -14,6 +14,7 @@ def translate_find_args(args: list[str]) -> list[str]:
     result = []
     paths = []
     pattern = None
+    exec_args = []  # Store -x/-X args separately (must come last)
     i = 0
     
     # fd needs -H to show hidden files (find shows them by default)
@@ -119,7 +120,7 @@ def translate_find_args(args: list[str]) -> list[str]:
         # -exec cmd {} \; → -x cmd
         # -exec cmd {} + → -X cmd (batch mode)
         if arg == "-exec":
-            exec_args = []
+            cmd_args = []
             i += 1
             batch_mode = False
             while i < len(args):
@@ -130,16 +131,17 @@ def translate_find_args(args: list[str]) -> list[str]:
                     break
                 elif args[i] == "{}":
                     # fd uses {} too, but handles it automatically
-                    exec_args.append("{}")
+                    cmd_args.append("{}")
                 else:
-                    exec_args.append(args[i])
+                    cmd_args.append(args[i])
                 i += 1
             i += 1  # Skip the terminator
             
+            # Store exec args to add at the very end (after paths)
             if batch_mode:
-                result.extend(["-X"] + exec_args)
+                exec_args = ["-X"] + cmd_args
             else:
-                result.extend(["-x"] + exec_args)
+                exec_args = ["-x"] + cmd_args
             continue
         
         # -L (follow symlinks) → -L
@@ -156,8 +158,12 @@ def translate_find_args(args: list[str]) -> list[str]:
     if pattern is None:
         result.append(".")
     
-    # Add paths at the end (fd takes paths after pattern/options)
+    # Add paths (fd takes paths after pattern/options, but before -x/-X)
     if paths:
         result.extend(paths)
+    
+    # Add exec args last (everything after -x/-X is treated as the command)
+    if exec_args:
+        result.extend(exec_args)
     
     return result
