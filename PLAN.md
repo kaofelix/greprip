@@ -38,7 +38,6 @@ Two levels of tests:
 - [x] Unit tests for translator
 - [x] Basic translator implementation
 - [x] CLI entry point
-- [x] `--dry-run` flag
 
 **Supported flags:**
 - [x] `-i`, `--ignore-case` (case insensitive)
@@ -69,9 +68,6 @@ Two levels of tests:
 - [x] `--exclude-dir=PATTERN` → `-g !PATTERN/`
 - [x] `--color`, `--color=always/never/auto`
 - [x] Combined flags like `-ri`, `-rni`
-
-**grg-specific flags:**
-- [x] `--dry-run` - print the rg command without executing
 
 ### Phase 2: find → fd (`fnd`)
 
