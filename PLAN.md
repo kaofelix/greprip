@@ -7,7 +7,7 @@ Create transparent drop-in replacements for `grep` and `find` that translate com
 ## Architecture
 
 - **`grg`**: Translates grep arguments → rg arguments, then executes rg
-- **`fnd`**: Translates find arguments → fd arguments, then executes fd (Phase 2)
+- **`fnd`**: Translates find arguments → fd arguments, then executes fd
 
 Separate entry points so users can alias each independently:
 ```bash
@@ -69,12 +69,27 @@ Two levels of tests:
 - [x] `--color`, `--color=always/never/auto`
 - [x] Combined flags like `-ri`, `-rni`
 
-### Phase 2: find → fd (`fnd`)
+### Phase 2: find → fd (`fnd`) ✅ COMPLETE
 
-- [ ] Acceptance test harness
-- [ ] Unit tests
-- [ ] Translator implementation
-- [ ] CLI entry point
+- [x] Acceptance test harness
+- [x] Unit tests
+- [x] Translator implementation
+- [x] CLI entry point
+
+**Supported options:**
+- [x] `-name PATTERN` → `-g PATTERN` (glob pattern)
+- [x] `-iname PATTERN` → `-i -g PATTERN` (case insensitive)
+- [x] `-type f/d/l` → `-t f/d/l` (file type)
+- [x] `-maxdepth N` → `-d N` (max depth)
+- [x] `-mindepth N` → `--min-depth N` (min depth)
+- [x] `-print` (implicit, no-op)
+- [x] `-print0` → `-0` (null-separated)
+- [x] `! -name PATTERN` → `-E PATTERN` (exclude)
+- [x] `-path PATTERN -prune` → `-E PATTERN` (exclude path)
+- [x] Hidden files included by default (`-H` flag added)
+
+**Known differences:**
+- `find` includes the search root in output, `fd` does not (acceptable for LLM use case)
 
 ## Tech Stack
 

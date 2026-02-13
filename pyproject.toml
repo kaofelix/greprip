@@ -8,6 +8,7 @@ dependencies = []
 
 [project.scripts]
 grg = "grg.cli:main"
+fnd = "fnd.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
