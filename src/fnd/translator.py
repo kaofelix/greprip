@@ -116,6 +116,38 @@ def translate_find_args(args: list[str]) -> list[str]:
             i += 1
             continue
         
+        # -exec cmd {} \; → -x cmd
+        # -exec cmd {} + → -X cmd (batch mode)
+        if arg == "-exec":
+            exec_args = []
+            i += 1
+            batch_mode = False
+            while i < len(args):
+                if args[i] == ";":
+                    break
+                elif args[i] == "+":
+                    batch_mode = True
+                    break
+                elif args[i] == "{}":
+                    # fd uses {} too, but handles it automatically
+                    exec_args.append("{}")
+                else:
+                    exec_args.append(args[i])
+                i += 1
+            i += 1  # Skip the terminator
+            
+            if batch_mode:
+                result.extend(["-X"] + exec_args)
+            else:
+                result.extend(["-x"] + exec_args)
+            continue
+        
+        # -L (follow symlinks) → -L
+        if arg == "-L":
+            result.append("-L")
+            i += 1
+            continue
+        
         # Unknown args - skip for now
         i += 1
     

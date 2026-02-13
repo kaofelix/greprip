@@ -86,6 +86,9 @@ Two levels of tests:
 - [x] `-print0` → `-0` (null-separated)
 - [x] `! -name PATTERN` → `-E PATTERN` (exclude)
 - [x] `-path PATTERN -prune` → `-E PATTERN` (exclude path)
+- [x] `-exec cmd {} \;` → `-x cmd` (per-file exec)
+- [x] `-exec cmd {} +` → `-X cmd` (batch exec)
+- [x] `-L` (follow symlinks)
 - [x] Hidden files included by default (`-H` flag added)
 
 **Known differences:**

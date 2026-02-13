@@ -114,3 +114,33 @@ class TestHiddenFiles:
         # We need to add -H to fd to match find behavior
         result = translate_find_args([".", "-name", "*.txt"])
         assert "-H" in result or "--hidden" in result
+
+
+class TestExec:
+    def test_exec_single(self):
+        # find -exec cmd {} \; → fd -x cmd
+        result = translate_find_args([".", "-name", "*.py", "-exec", "wc", "-l", "{}", ";"])
+        assert "-x" in result
+        assert "wc" in result
+        assert "-l" in result
+
+    def test_exec_batch(self):
+        # find -exec cmd {} + → fd -X cmd (batch)
+        result = translate_find_args([".", "-type", "f", "-exec", "chmod", "644", "{}", "+"])
+        assert "-X" in result
+        assert "chmod" in result
+        assert "644" in result
+
+    def test_exec_with_grep(self):
+        # Common pattern: find -exec grep
+        result = translate_find_args([".", "-name", "*.py", "-exec", "grep", "pattern", "{}", ";"])
+        assert "-x" in result
+        assert "grep" in result
+        assert "pattern" in result
+
+
+class TestFollowSymlinks:
+    def test_follow_symlinks(self):
+        # find -L → fd -L
+        result = translate_find_args(["-L", ".", "-name", "*.txt"])
+        assert "-L" in result
