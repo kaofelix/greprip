@@ -63,6 +63,34 @@ run_test "word boundary (-w)" "-w" "foo" "$FIXTURES/sample.txt"
 run_test "recursive (-r)" "-r" "hello" "$FIXTURES"
 run_test "recursive + case insensitive" "-ri" "hello" "$FIXTURES"
 
+# Context lines
+run_test "after context (-A)" "-A" "1" "foo" "$FIXTURES/sample.txt"
+run_test "before context (-B)" "-B" "1" "foo" "$FIXTURES/sample.txt"
+run_test "context both (-C)" "-C" "1" "foo" "$FIXTURES/sample.txt"
+
+# Count and files
+run_test "count matches (-c)" "-c" "hello" "$FIXTURES/sample.txt"
+run_test "files with matches (-l)" "-l" "-r" "hello" "$FIXTURES"
+run_test "only matching (-o)" "-o" "foo" "$FIXTURES/sample.txt"
+
+# Fixed strings
+run_test "fixed strings (-F)" "-F" "foo bar" "$FIXTURES/sample.txt"
+
+# Extended regex
+run_test "extended regex (-E)" "-E" "foo|baz" "$FIXTURES/sample.txt"
+
+# Include/exclude patterns
+run_test "include pattern" "-r" "--include=*.txt" "hello" "$FIXTURES"
+run_test "include .py files" "-r" "--include=*.py" "hello" "$FIXTURES"
+
+# Multiple patterns with -e
+run_test "multiple patterns (-e)" "-e" "hello" "-e" "foo" "$FIXTURES/sample.txt"
+
+# Long options
+run_test "long --ignore-case" "--ignore-case" "hello" "$FIXTURES/sample.txt"
+run_test "long --recursive" "--recursive" "hello" "$FIXTURES"
+run_test "long --word-regexp" "--word-regexp" "foo" "$FIXTURES/sample.txt"
+
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 

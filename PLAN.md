@@ -30,7 +30,7 @@ Two levels of tests:
 
 ## Progress
 
-### Phase 1: grep → rg (`grg`)
+### Phase 1: grep → rg (`grg`) ✅ COMPLETE
 
 - [x] Project setup with UV
 - [x] Test fixtures
@@ -38,34 +38,40 @@ Two levels of tests:
 - [x] Unit tests for translator
 - [x] Basic translator implementation
 - [x] CLI entry point
+- [x] `--dry-run` flag
 
 **Supported flags:**
-- [x] `-i` (case insensitive)
-- [x] `-n` (line numbers)
-- [x] `-v` (invert match)
-- [x] `-w` (word boundary)
-- [x] `-l` (files with matches)
-- [x] `-c` (count)
-- [x] `-r`, `-R` (recursive - dropped, rg default)
-- [x] `-E` (extended regex - dropped, rg default)
-- [x] `-o`, `-h`, `-H` (pass through)
+- [x] `-i`, `--ignore-case` (case insensitive)
+- [x] `-n`, `--line-number` (line numbers)
+- [x] `-v`, `--invert-match` (invert match)
+- [x] `-w`, `--word-regexp` (word boundary)
+- [x] `-l`, `--files-with-matches` (files with matches)
+- [x] `-c`, `--count` (count)
+- [x] `-o`, `--only-matching` (only matching)
+- [x] `-h`, `--no-filename` (no filename)
+- [x] `-H`, `--with-filename` (with filename)
+- [x] `-r`, `-R`, `--recursive` (recursive - dropped, rg default)
+- [x] `-E`, `--extended-regexp` (extended regex - dropped, rg default)
+- [x] `-G`, `--basic-regexp` (basic regex - dropped)
+- [x] `-F`, `--fixed-strings` (fixed strings)
+- [x] `-P`, `--perl-regexp` (Perl regex)
+- [x] `-q`, `--quiet`, `--silent` (quiet mode)
+- [x] `-s` (suppress errors → `--no-messages`)
+- [x] `-A NUM`, `--after-context=NUM` (after context)
+- [x] `-B NUM`, `--before-context=NUM` (before context)
+- [x] `-C NUM`, `--context=NUM` (context both)
+- [x] `-NUM` shorthand (e.g., `-3` → `-C 3`)
+- [x] `-e PATTERN`, `--regexp=PATTERN` (explicit pattern)
+- [x] `-f FILE`, `--file=FILE` (patterns from file)
+- [x] `-m NUM`, `--max-count=NUM` (max matches)
 - [x] `--include=PATTERN` → `-g PATTERN`
 - [x] `--exclude=PATTERN` → `-g !PATTERN`
+- [x] `--exclude-dir=PATTERN` → `-g !PATTERN/`
+- [x] `--color`, `--color=always/never/auto`
 - [x] Combined flags like `-ri`, `-rni`
 
-**Missing flags (to add):**
-- [ ] `-A NUM`, `-B NUM`, `-C NUM` (context lines)
-- [ ] `-e PATTERN` (explicit pattern)
-- [ ] `-f FILE` (patterns from file)
-- [ ] `-q` (quiet)
-- [ ] `-s` (suppress errors)
-- [ ] `--color` handling
-- [ ] `-F` (fixed strings)
-- [ ] `-P` (Perl regex)
-
-**Missing features:**
-- [ ] `--dry-run` flag to print rg command without executing
-- [ ] Better error handling
+**grg-specific flags:**
+- [x] `--dry-run` - print the rg command without executing
 
 ### Phase 2: find → fd (`fnd`)
 
