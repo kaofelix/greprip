@@ -144,3 +144,29 @@ class TestFollowSymlinks:
         # find -L → fd -L
         result = translate_find_args(["-L", ".", "-name", "*.txt"])
         assert "-L" in result
+
+
+class TestOrPatterns:
+    """Test handling of -o (OR) with multiple -name patterns."""
+
+    def test_simple_or_patterns(self):
+        # find . -name "a" -o -name "b" -o -name "c"
+        # Should translate to fd --glob '{a,b,c}' .
+        result = translate_find_args([".", "-name", ".ruby-version", "-o", "-name", ".tool-versions", "-o", "-name", "mise.toml"])
+        
+        # Should use brace expansion pattern
+        result_str = " ".join(result)
+        assert "{" in result_str or "|" in result_str
+        # Should contain all the patterns
+        assert ".ruby-version" in result_str
+        assert ".tool-versions" in result_str
+        assert "mise.toml" in result_str
+
+    def test_or_with_path_and_maxdepth(self):
+        # find /path -maxdepth 3 -name "a" -o -name "b"
+        result = translate_find_args(["/path", "-maxdepth", "3", "-name", ".ruby-version", "-o", "-name", ".tool-versions"])
+        
+        result_str = " ".join(result)
+        assert "/path" in result_str
+        assert "-d" in result_str or "--max-depth" in result_str
+        assert "{" in result_str or "|" in result_str

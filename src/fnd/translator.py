@@ -13,7 +13,7 @@ def translate_find_args(args: list[str]) -> list[str]:
     """
     result = []
     paths = []
-    pattern = None
+    patterns = []  # Support multiple patterns (for OR operations)
     exec_args = []  # Store -x/-X args separately (must come last)
     i = 0
     
@@ -31,19 +31,18 @@ def translate_find_args(args: list[str]) -> list[str]:
                 i += 1
                 continue
         
-        # -name PATTERN → -g PATTERN (glob)
+        # -name PATTERN → collect pattern for later (might be OR'd)
         if arg == "-name":
             if i + 1 < len(args):
-                pattern = args[i + 1]
-                result.extend(["-g", pattern])
+                patterns.append(args[i + 1])
                 i += 2
                 continue
         
-        # -iname PATTERN → -i -g PATTERN (case insensitive glob)
+        # -iname PATTERN → -i option + collect pattern
         if arg == "-iname":
             if i + 1 < len(args):
-                pattern = args[i + 1]
-                result.extend(["-i", "-g", pattern])
+                result.append("-i")  # Add case-insensitive flag once
+                patterns.append(args[i + 1])
                 i += 2
                 continue
         
@@ -112,7 +111,7 @@ def translate_find_args(args: list[str]) -> list[str]:
             i += 1
             continue
         
-        # -o (or) - skip, we handle the main expression
+        # -o (or) - continue collecting patterns (already handled)
         if arg == "-o":
             i += 1
             continue
@@ -155,8 +154,19 @@ def translate_find_args(args: list[str]) -> list[str]:
     
     # fd requires a pattern - if none specified via -name/-iname, use "." (match all)
     # The pattern must come before paths in fd
-    if pattern is None:
+    if not patterns:
+        # No patterns specified, use "." to match all
         result.append(".")
+    else:
+        # Handle one or more patterns
+        if len(patterns) == 1:
+            # Single pattern, use directly
+            result.extend(["-g", patterns[0]])
+        else:
+            # Multiple patterns - use brace expansion
+            # Convert list of patterns to {p1,p2,p3} format
+            brace_pattern = "{" + ",".join(patterns) + "}"
+            result.extend(["-g", brace_pattern])
     
     # Add paths (fd takes paths after pattern/options, but before -x/-X)
     if paths:
