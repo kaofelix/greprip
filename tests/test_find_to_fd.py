@@ -170,3 +170,13 @@ class TestOrPatterns:
         assert "/path" in result_str
         assert "-d" in result_str or "--max-depth" in result_str
         assert "{" in result_str or "|" in result_str
+
+    def test_or_with_parentheses(self):
+        # find . -type f \( -name "*.ts" -o -name "*.tsx" \)
+        # Parentheses should be ignored, patterns combined
+        result = translate_find_args([".", "-type", "f", "(", "-name", "*.ts", "-o", "-name", "*.tsx", ")"])
+        result_str = " ".join(result)
+        assert "-t" in result_str
+        assert "{" in result_str  # Brace expansion
+        assert "*.ts" in result_str
+        assert "*.tsx" in result_str
