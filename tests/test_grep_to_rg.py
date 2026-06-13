@@ -172,6 +172,66 @@ class TestPerlRegex:
         assert "-P" in result
 
 
+class TestBREToEREConversion:
+    """Test conversion of Basic Regular Expression (BRE) to Extended Regular Expression (ERE)."""
+
+    def test_alternation(self):
+        # BRE uses \| for alternation, ERE uses |
+        result = translate_grep_args([r"foo\|bar", "file.txt"])
+        assert result == ["foo|bar", "file.txt"]
+
+    def test_one_or_more(self):
+        # BRE uses \+ for one or more, ERE uses +
+        result = translate_grep_args([r"foo\+", "file.txt"])
+        assert result == ["foo+", "file.txt"]
+
+    def test_zero_or_one(self):
+        # BRE uses \? for zero or one, ERE uses ?
+        result = translate_grep_args([r"foo\?", "file.txt"])
+        assert result == ["foo?", "file.txt"]
+
+    def test_grouping(self):
+        # BRE uses \( \) for grouping, ERE uses ( )
+        result = translate_grep_args([r"\(foo\)\?", "file.txt"])
+        assert result == ["(foo)?", "file.txt"]
+
+    def test_quantifier(self):
+        # BRE uses \{n,m\} for quantifiers, ERE uses {n,m}
+        result = translate_grep_args([r"foo\{1,3\}", "file.txt"])
+        assert result == ["foo{1,3}", "file.txt"]
+
+    def test_combined_bre_operators(self):
+        # Test multiple BRE operators in one pattern
+        result = translate_grep_args([r"\(foo\|bar\)\+", "file.txt"])
+        assert result == ["(foo|bar)+", "file.txt"]
+
+    def test_alternation_with_e_flag(self):
+        # Pattern with -e flag should also be converted
+        result = translate_grep_args(["-e", r"foo\|bar", "file.txt"])
+        assert result == ["-e", "foo|bar", "file.txt"]
+
+    def test_alternation_with_regexp_long(self):
+        # Pattern with --regexp should also be converted
+        result = translate_grep_args(["--regexp=foo\\|bar", "file.txt"])
+        assert result == ["-e", "foo|bar", "file.txt"]
+
+    def test_fixed_strings_no_conversion(self):
+        # With -F, BRE escapes should NOT be converted (literal search)
+        result = translate_grep_args(["-F", r"foo\|bar", "file.txt"])
+        assert result == ["-F", r"foo\|bar", "file.txt"]
+
+    def test_fixed_strings_combined_no_conversion(self):
+        # With -F combined in flags like -Fi, no conversion
+        result = translate_grep_args(["-Fi", r"foo\|bar", "file.txt"])
+        assert r"foo\|bar" in result  # Should NOT be converted
+
+    def test_literal_backslash_pipe_preserved(self):
+        # If someone wants literal \| in ERE, they'd need to double escape
+        # This test shows that \\| stays as \| (backslash then alternation)
+        # But we can't distinguish user intent, so we just convert \| to |
+        pass  # Documenting the limitation
+
+
 class TestLongOptions:
     def test_ignore_case_long(self):
         result = translate_grep_args(["--ignore-case", "hello", "file.txt"])

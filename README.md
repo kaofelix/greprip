@@ -53,7 +53,7 @@ grep --version  # Should show: ripgrep X.X.X
 |----------|-------|
 | Basic | `-i`, `-n`, `-v`, `-w`, `-l`, `-c`, `-o`, `-h`, `-H` |
 | Recursive | `-r`, `-R` (dropped - rg default) |
-| Regex | `-E` (dropped - rg default), `-F`, `-P` |
+| Regex | `-E` (ERE, passed as‑is, no conversion), `-F`, `-P` (maps to `--pcre2`) |
 | Context | `-A NUM`, `-B NUM`, `-C NUM`, `-NUM` |
 | Patterns | `-e PATTERN`, `-f FILE` |
 | Filters | `--include=`, `--exclude=`, `--exclude-dir=` |

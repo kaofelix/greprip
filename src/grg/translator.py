@@ -3,6 +3,34 @@
 import re
 
 
+def convert_bre_to_ere(pattern: str) -> str:
+    """
+    Convert Basic Regular Expression (BRE) syntax to Extended Regular Expression (ERE).
+    
+    In BRE (grep default), special characters like |, +, ?, (, ), {, } must be escaped
+    to have their special meaning. In ERE (rg default), these are special unescaped.
+    
+    This converts BRE escaped forms to ERE unescaped forms:
+    - \\| -> |  (alternation)
+    - \\+ -> +  (one or more)
+    - \\? -> ?  (zero or one)
+    - \\( -> (  (grouping)
+    - \\) -> )  (grouping)
+    - \\{ -> {  (quantifier)
+    - \\} -> }  (quantifier)
+    """
+    # Order matters: do \( and \) first to avoid issues with the backslash
+    result = pattern
+    result = result.replace(r'\(', '(')
+    result = result.replace(r'\)', ')')
+    result = result.replace(r'\|', '|')
+    result = result.replace(r'\+', '+')
+    result = result.replace(r'\?', '?')
+    result = result.replace(r'\{', '{')
+    result = result.replace(r'\}', '}')
+    return result
+
+
 # Flags that are identical in grep and rg (no argument)
 IDENTICAL_SHORT_FLAGS = {"-i", "-n", "-v", "-w", "-l", "-c", "-o", "-h", "-H", "-q", "-F", "-P"}
 
@@ -46,8 +74,20 @@ def translate_grep_args(args: list[str]) -> list[str]:
     Returns:
         List of arguments suitable for rg
     """
+    # First pass: detect if fixed strings mode is requested
+    fixed_strings = False
+    for arg in args:
+        if arg == "-F" or arg == "--fixed-strings":
+            fixed_strings = True
+            break
+        # Check combined flags like -Fi
+        if arg.startswith("-") and len(arg) > 1 and "F" in arg[1:]:
+            fixed_strings = True
+            break
+    
     result = []
     i = 0
+    pattern_seen = False  # Track if we've seen the main pattern
     
     while i < len(args):
         arg = args[i]
@@ -96,6 +136,15 @@ def translate_grep_args(args: list[str]) -> list[str]:
             i += 1
             continue
         
+        # Handle --regexp=PATTERN (pattern via long option)
+        if arg.startswith("--regexp="):
+            _, pattern = arg.split("=", 1)
+            if not fixed_strings:
+                pattern = convert_bre_to_ere(pattern)
+            result.extend(["-e", pattern])
+            i += 1
+            continue
+        
         # Handle long options with = value
         if arg.startswith("--") and "=" in arg:
             opt, value = arg.split("=", 1)
@@ -134,7 +183,14 @@ def translate_grep_args(args: list[str]) -> list[str]:
                     "--max-count": "-m",
                 }
                 if arg in short_map and i + 1 < len(args):
-                    result.extend([short_map[arg], args[i + 1]])
+                    if arg == "--regexp":
+                        # Convert pattern from BRE to ERE
+                        pattern = args[i + 1]
+                        if not fixed_strings:
+                            pattern = convert_bre_to_ere(pattern)
+                        result.extend(["-e", pattern])
+                    else:
+                        result.extend([short_map[arg], args[i + 1]])
                     i += 2
                     continue
                 else:
@@ -155,6 +211,19 @@ def translate_grep_args(args: list[str]) -> list[str]:
                 elif flag in DROP_SHORT_FLAGS:
                     pass  # Skip
                 # Note: combined flags with args like -e are tricky, pass through
+            i += 1
+            continue
+        
+        # Handle -e PATTERN (explicit pattern)
+        if arg == "-e":
+            result.append(arg)
+            if i + 1 < len(args):
+                pattern = args[i + 1]
+                if not fixed_strings:
+                    pattern = convert_bre_to_ere(pattern)
+                result.append(pattern)
+                i += 2
+                continue
             i += 1
             continue
         
@@ -179,7 +248,13 @@ def translate_grep_args(args: list[str]) -> list[str]:
             i += 1
             continue
         
-        # Everything else passes through (pattern, paths, etc.)
+        # Everything else: could be pattern or path
+        # First non-flag arg is the pattern (if no -e was used), rest are paths
+        if not pattern_seen:
+            # This is the main pattern - convert BRE to ERE unless fixed strings
+            if not fixed_strings:
+                arg = convert_bre_to_ere(arg)
+            pattern_seen = True
         result.append(arg)
         i += 1
     
