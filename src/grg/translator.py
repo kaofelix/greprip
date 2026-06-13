@@ -76,14 +76,18 @@ def translate_grep_args(args: list[str]) -> list[str]:
     """
     # First pass: detect if fixed strings mode is requested
     fixed_strings = False
+    ere_mode = False
     for arg in args:
+        if arg in ("-E", "--extended-regexp", "-P", "--perl-regexp"):
+            ere_mode = True
         if arg == "-F" or arg == "--fixed-strings":
             fixed_strings = True
             break
-        # Check combined flags like -Fi
-        if arg.startswith("-") and len(arg) > 1 and "F" in arg[1:]:
-            fixed_strings = True
-            break
+        if arg.startswith("-") and len(arg) > 1 and not arg[1].isdigit():
+            if "F" in arg[1:]: fixed_strings = True
+            if "E" in arg[1:] or "P" in arg[1:]: ere_mode = True
+            if "F" in arg[1:] or "E" in arg[1:] or "P" in arg[1:]:
+                break
     
     result = []
     i = 0
